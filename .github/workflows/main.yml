@@ -19,7 +19,7 @@ jobs:
         shell: powershell
         run: |
           try {
-            $cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert | Where-Object {$_.NotAfter -lt (Get-Date)} | Select-Object -First 1
+            $cert = Get-ChildItem Cert:\LocalMachine\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
             if ($null -eq $cert) {
                 throw "no code signing certificate found"
             }
@@ -36,7 +36,7 @@ jobs:
               throw $_.exception.message
           }
           
-          $gitUriPAT = "{0}{1}@{2}/{3}" -f 'https://',$env:PAT,$env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY
+          $gitUriPAT = "{0}{1}@{2}/{3}" -f 'https://',$env:GITHUB_TOKEN,$env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY
 
           git add *.ps1 *.txt
           git commit -m $ENV:GITHUB_ACTOR
