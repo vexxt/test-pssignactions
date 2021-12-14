@@ -2,7 +2,7 @@ name: Sign PowerShell Scripts
 on:
   push:
     branches:
-    - working/*
+    - working
 env:
   ARTIFACT_NAME: PowerShell.Workflows.ScriptSigning
 jobs:
