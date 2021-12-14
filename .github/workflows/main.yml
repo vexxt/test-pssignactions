@@ -19,43 +19,14 @@ jobs:
         shell: powershell
         run: |
           $verbosepreference = 'continue'
-           $authenticode = New-SelfSignedCertificate -Subject "ATA Authenticode" -CertStoreLocation Cert:\LocalMachine\My -Type CodeSigningCert
-           $rootStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("Root","LocalMachine")
-           $rootStore.Open("ReadWrite")
-           $rootStore.Add($authenticode)
-           $rootStore.Close()
-           $publisherStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher","LocalMachine")
-           $publisherStore.Open("ReadWrite")
-           $publisherStore.Add($authenticode) 
-           $publisherStore.Close()
+           
           #try {
-            $cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
+            #$cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
+            $cert = gci cert:\ -r -CodeSigningCert | select -First 1
             write-host $cert.psparentpath
             #if ($null -eq $cert) {
             #    throw "no code signing certificate found"
             #}
-            
-            # Add the self-signed Authenticode certificate to the computer's root certificate store.
-            ## Create an object to represent the LocalMachine\Root certificate store.
-             $rootStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("Root","LocalMachine")
-            ## Open the root certificate store for reading and writing.
-             $rootStore.Open("ReadWrite")
-            ## Add the certificate stored in the $authenticode variable.
-             $rootStore.Add($authenticode)
-            ## Close the root certificate store.
-             $rootStore.Close()
-
-            # Add the self-signed Authenticode certificate to the computer's trusted publishers certificate store.
-            ## Create an object to represent the LocalMachine\TrustedPublisher certificate store.
-             $publisherStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher","LocalMachine")
-            ## Open the TrustedPublisher certificate store for reading and writing.
-             $publisherStore.Open("ReadWrite")
-            ## Add the certificate stored in the $authenticode variable.
-             $publisherStore.Add($authenticode)
-            ## Close the TrustedPublisher certificate store.
-             $publisherStore.Close()
-            
-            
             
             $scripts = Get-ChildItem $ENV:GITHUB_WORKSPACE -Recurse -Filter *.ps1
             foreach ($ps1 in $scripts) {
