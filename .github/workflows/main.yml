@@ -21,13 +21,16 @@ jobs:
           $verbosepreference = 'continue'
           try {
             $cert = Get-ChildItem Cert:\LocalMachine\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
+            write-host $cert.psparentpath
+            write-host $cert
+            
             if ($null -eq $cert) {
                 throw "no code signing certificate found"
             }
 
             $scripts = Get-ChildItem $ENV:GITHUB_WORKSPACE -Recurse -Filter *.ps1
             foreach ($ps1 in $scripts) {
-                Set-AuthenticodeSignature $ps1.FullName -Certificate $cert
+                Set-AuthenticodeSignature $ps1.FullName -Certificate $cert -verbose
             }
           }
           Catch [System.Management.Automation.ItemNotFoundException] {
