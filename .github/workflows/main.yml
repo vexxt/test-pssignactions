@@ -2,7 +2,7 @@ name: Sign PowerShell Scripts
 on:
   push:
     branches:
-    - working/*
+    - working
 env:
   ARTIFACT_NAME: PowerShell.Workflows.ScriptSigning
 jobs:
@@ -40,4 +40,4 @@ jobs:
 
           git add *.ps1 *.txt
           git commit -m $ENV:GITHUB_ACTOR
-          git push $gitUriPAT HEAD:refs/heads/master -f
+          git push $gitUriPAT HEAD:refs/heads/main -f
