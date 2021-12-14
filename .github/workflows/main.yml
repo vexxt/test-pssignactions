@@ -36,8 +36,8 @@ jobs:
           Catch {
               throw $_.exception.message
           }
-          
-          $gitUriPAT = "{0}{1}@{2}/{3}" -f 'https://',$env:GITHUB_TOKEN,$env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY
+          $GIT_URL = [system.uri]("{0}/{1}" -f $env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY)
+          $gitUriPAT = "{0}://{1}@{2}{3}" -f $GIT_URL.scheme,$env:GITHUB_TOKEN,$GIT_URL.Host,$GIT_URL.AbsolutePath
           write-host $gituripat
 
           git add *.ps1 *.txt
