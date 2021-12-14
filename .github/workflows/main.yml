@@ -28,14 +28,12 @@ jobs:
            $publisherStore.Open("ReadWrite")
            $publisherStore.Add($authenticode) 
            $publisherStore.Close()
-          try {
+          #try {
             $cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
             write-host $cert.psparentpath
-            if ($null -eq $cert) {
-                throw "no code signing certificate found"
-            }
-            
-            $authenticode = $cert
+            #if ($null -eq $cert) {
+            #    throw "no code signing certificate found"
+            #}
             
             # Add the self-signed Authenticode certificate to the computer's root certificate store.
             ## Create an object to represent the LocalMachine\Root certificate store.
@@ -66,13 +64,13 @@ jobs:
                 write-host $Signature
                 
             }
-          }
-          Catch [System.Management.Automation.ItemNotFoundException] {
-              Write-Error -message "code sign certificate not available" -Exception $_.exception.message
-          }
-          Catch {
-              throw $_.exception.message
-          }
+          #}
+          #Catch [System.Management.Automation.ItemNotFoundException] {
+          #    Write-Error -message "code sign certificate not available" -Exception $_.exception.message
+          #}
+          #Catch {
+          #    throw $_.exception.message
+          #}
           $GIT_URL = [system.uri]("{0}/{1}" -f $env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY)
           $gitUriPAT = "{0}://{1}@{2}{3}" -f $GIT_URL.scheme,$env:GITHUB_TOKEN,$GIT_URL.Host,$GIT_URL.AbsolutePath
           write-host $gituripat
