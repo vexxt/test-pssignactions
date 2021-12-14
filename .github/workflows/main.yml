@@ -19,8 +19,16 @@ jobs:
         shell: powershell
         run: |
           $verbosepreference = 'continue'
+           $authenticode = New-SelfSignedCertificate -Subject "ATA Authenticode" -CertStoreLocation Cert:\LocalMachine\My -Type CodeSigningCert
+           $rootStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("Root","LocalMachine")
+           $rootStore.Open("ReadWrite")
+           $rootStore.Add($authenticode)
+           $rootStore.Close()
+           $publisherStore = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher","LocalMachine")
+           $publisherStore.Open("ReadWrite")
+           $publisherStore.Add($authenticode) $publisherStore.Close()
           try {
-            $cert = Get-ChildItem Cert:\LocalMachine\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
+            $cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
             write-host $cert.psparentpath
             if ($null -eq $cert) {
                 throw "no code signing certificate found"
