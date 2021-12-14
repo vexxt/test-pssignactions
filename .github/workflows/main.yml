@@ -14,34 +14,31 @@ jobs:
         uses: actions/checkout@v2
         
       - name: Sign PowerShell scripts
-        #env: 
-        #  PAT: ${{ secrets.PAT }}
+        env: # Or as an environment variable
+          PAT: ${{ secrets.PAT }}
         shell: powershell
         run: |
           $verbosepreference = 'continue'
-           
-          #try {
-            #$cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
-            $cert = gci cert:\ -r -CodeSigningCert | select -First 1
+          try {
+            $cert = Get-ChildItem Cert:\ -r -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
             write-host $cert.psparentpath
-            #if ($null -eq $cert) {
-            #    throw "no code signing certificate found"
-            #}
+            write-host $cert
             
+            if ($null -eq $cert) {
+                throw "no code signing certificate found"
+            }
+
             $scripts = Get-ChildItem $ENV:GITHUB_WORKSPACE -Recurse -Filter *.ps1
             foreach ($ps1 in $scripts) {
-                $Signature = Set-AuthenticodeSignature $ps1.FullName -Certificate $cert -verbose
-                write-host $Signature.StatusMessage
-                write-host $Signature
-                
+                Set-AuthenticodeSignature $ps1.FullName -Certificate $cert -verbose
             }
-          #}
-          #Catch [System.Management.Automation.ItemNotFoundException] {
-          #    Write-Error -message "code sign certificate not available" -Exception $_.exception.message
-          #}
-          #Catch {
-          #    throw $_.exception.message
-          #}
+          }
+          Catch [System.Management.Automation.ItemNotFoundException] {
+              Write-Error -message "code sign certificate not available" -Exception $_.exception.message
+          }
+          Catch {
+              throw $_.exception.message
+          }
           $GIT_URL = [system.uri]("{0}/{1}" -f $env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY)
           $gitUriPAT = "{0}://{1}@{2}{3}" -f $GIT_URL.scheme,$env:GITHUB_TOKEN,$GIT_URL.Host,$GIT_URL.AbsolutePath
           write-host $gituripat
