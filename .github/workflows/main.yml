@@ -39,7 +39,6 @@ jobs:
           Catch {
               throw $_.exception.message
           }
-          start-sleep 600
           $GIT_URL = [system.uri]("{0}/{1}" -f $env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY)
           $gitUriPAT = "{0}://{1}@{2}{3}" -f $GIT_URL.scheme,$env:GITHUB_TOKEN,$GIT_URL.Host,$GIT_URL.AbsolutePath
           write-host $gituripat
