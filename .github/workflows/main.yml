@@ -1,0 +1,43 @@
+name: Sign PowerShell Scripts
+on:
+  push:
+    branches:
+    - working/*
+env:
+  ARTIFACT_NAME: PowerShell.Workflows.ScriptSigning
+jobs:
+  sign_scripts:
+    name: Sign and publish PowerShell scripts
+    runs-on: windows
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        
+      - name: Sign PowerShell scripts
+        env: # Or as an environment variable
+          PAT: ${{ secrets.PAT }}
+        shell: powershell
+        run: |
+          try {
+            $cert = Get-ChildItem Cert:\CurrentUser\My\ -ErrorAction Stop -CodeSigningCert | Where-Object {$_.NotAfter -lt (Get-Date)} | Select-Object -First 1
+            if ($null -eq $cert) {
+                throw "no code signing certificate found"
+            }
+
+            $scripts = Get-ChildItem $ENV:GITHUB_WORKSPACE -Recurse -Filter *.ps1
+            foreach ($ps1 in $scripts) {
+                Set-AuthenticodeSignature $ps1.FullName -Certificate $cert
+            }
+          }
+          Catch [System.Management.Automation.ItemNotFoundException] {
+              Write-Error -message "code sign certificate not available" -Exception $_.exception.message
+          }
+          Catch {
+              throw $_.exception.message
+          }
+          
+          $gitUriPAT = "{0}{1}@{2}/{3}" -f 'https://',$env:PAT,$env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY
+
+          git add *.ps1 *.txt
+          git commit -m $ENV:GITHUB_ACTOR
+          git push $gitUriPAT HEAD:refs/heads/master -f
