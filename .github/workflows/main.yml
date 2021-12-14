@@ -18,6 +18,7 @@ jobs:
           PAT: ${{ secrets.PAT }}
         shell: powershell
         run: |
+          $verbosepreference = 'continue'
           try {
             $cert = Get-ChildItem Cert:\LocalMachine\My\ -ErrorAction Stop -CodeSigningCert <#| Where-Object {$_.NotAfter -lt (Get-Date)}#> | Select-Object -First 1
             if ($null -eq $cert) {
@@ -37,6 +38,7 @@ jobs:
           }
           
           $gitUriPAT = "{0}{1}@{2}/{3}" -f 'https://',$env:GITHUB_TOKEN,$env:GITHUB_SERVER_URL,$env:GITHUB_REPOSITORY
+          write-host $gituripat
 
           git add *.ps1 *.txt
           git commit -m $ENV:GITHUB_ACTOR
