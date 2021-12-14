@@ -30,7 +30,10 @@ jobs:
 
             $scripts = Get-ChildItem $ENV:GITHUB_WORKSPACE -Recurse -Filter *.ps1
             foreach ($ps1 in $scripts) {
-                Set-AuthenticodeSignature $ps1.FullName -Certificate $cert -verbose
+                $Signature = Set-AuthenticodeSignature $ps1.FullName -Certificate $cert -verbose
+                write-host $Signature.StatusMessage
+                write-host $Signature
+                
             }
           }
           Catch [System.Management.Automation.ItemNotFoundException] {
